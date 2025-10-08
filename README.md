@@ -1,3 +1,3 @@
-# LEvel devil Project
+# Level devil Project
 ---
 Vytvořil: Aleš Laník,LAN0229.
