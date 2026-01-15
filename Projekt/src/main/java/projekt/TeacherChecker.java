@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class TeacherChecker {
-
     public static Set<String> loadTeachersFromKatedra() {
         String url = "https://www.fei.vsb.cz/460/cs/kontakt/lide/";
         Set<String> names = new HashSet<>();

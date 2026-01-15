@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Settings {
-
     private static final String FILE_NAME = "settings.csv";
 
     private Map<String, String> data = new HashMap<>();

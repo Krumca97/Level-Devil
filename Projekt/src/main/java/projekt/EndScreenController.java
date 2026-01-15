@@ -7,13 +7,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 
 public class EndScreenController {
-
-    @FXML
-    private ResourceBundle resources;
-
-    @FXML
-    private URL location;
-
     @FXML
     private Button backToMenu;
 
@@ -25,7 +18,6 @@ public class EndScreenController {
     @FXML
     void initialize() {
         assert backToMenu != null : "fx:id=\"backToMenu\" was not injected: check your FXML file 'endScrenn.fxml'.";
-
     }
 
 }

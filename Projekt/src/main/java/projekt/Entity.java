@@ -8,8 +8,6 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 public class Entity implements Collisionable {
-
-    // pozice a velikost
     private double entityX;
     private double entityY;
     private double entityVelocityX;
@@ -21,17 +19,16 @@ public class Entity implements Collisionable {
     private boolean onGround = false;
     private boolean active = true;
 
-    // bullet animace
     private Image[] bulletFrames;
     private int bulletFrameIndex = 0;
     private double bulletFrameTimer = 0.0;
 
-    // pohyb
+    private Image playerGif;
+
     private static final double MOVE_SPEED = 200;
     private static final double JUMP_SPEED = -450;
     private static final double GRAVITY = 600;
 
-    // input
     private boolean left;
     private boolean right;
     private boolean jump;
@@ -41,25 +38,30 @@ public class Entity implements Collisionable {
         this.entityY = y;
         this.entityWidth = w;
         this.entityHeight = h;
+        loadPlayerGif();
     }
 
-    // ===== INPUT =====
+    private void loadPlayerGif() {
+        try {playerGif = new Image(
+                    Objects.requireNonNull(getClass().getResource("/projekt/player_run.gif")).toExternalForm());
+        } catch (Exception e) {
+            playerGif = null;
+        }
+    }
+
     public void input(boolean left, boolean right, boolean jump) {
         this.left = left;
         this.right = right;
         this.jump = jump;
     }
 
-    // ===== UPDATE =====
     public void update(double deltaTime) {
-
         if (!active) return;
 
         if (isBullet) {
             entityX += entityVelocityX * deltaTime;
             entityY += entityVelocityY * deltaTime;
 
-            // animace
             if (bulletFrames != null) {
                 bulletFrameTimer += deltaTime;
                 double bulletFrameDuration = 0.10;
@@ -73,8 +75,12 @@ public class Entity implements Collisionable {
 
         entityVelocityX = 0;
 
-        if (left) entityVelocityX -= MOVE_SPEED;
-        if (right) entityVelocityX += MOVE_SPEED;
+        if (left) {
+            entityVelocityX -= MOVE_SPEED;
+        }
+        if (right) {
+            entityVelocityX += MOVE_SPEED;
+        }
 
         if (jump && onGround) {
             entityVelocityY = JUMP_SPEED;
@@ -87,52 +93,64 @@ public class Entity implements Collisionable {
         entityY += entityVelocityY * deltaTime;
     }
 
-    // ===== DRAW =====
     public void draw(GraphicsContext gc) {
 
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         if (isBullet && bulletFrames != null) {
-            gc.drawImage(
-                    bulletFrames[bulletFrameIndex],
-                    entityX, entityY,
-                    entityWidth, entityHeight
-            );
+            gc.drawImage(bulletFrames[bulletFrameIndex], entityX, entityY, entityWidth, entityHeight);
+        } else if (playerGif != null) {
+            gc.drawImage(playerGif, entityX, entityY, entityWidth, entityHeight);
         } else {
             gc.setFill(Color.RED);
             gc.fillRect(entityX, entityY, entityWidth, entityHeight);
         }
-
-        gc.setStroke(Color.BLUE);
-        gc.setLineWidth(2);
-        gc.strokeRect(entityX, entityY, entityWidth, entityHeight);
+        //debug bounding box
+//        gc.setStroke(Color.BLUE);
+//        gc.setLineWidth(2);
+//        gc.strokeRect(entityX, entityY, entityWidth, entityHeight);
     }
 
-    // ===== WORLD BOUNDS =====
     public void keepInWorld(double minX, double maxX, double maxY) {
 
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         if (isBullet) {
-            // 🔥 BULLET = JEDNORÁZOVÝ
-            if (entityX > maxX || entityX + entityWidth < minX) {
-                active = false; // zmizí navždy
+            if (entityX > maxX || entityX + entityWidth < minX || entityY > maxY || entityY + entityHeight < 0) {
+                active = false;
             }
             return;
         }
 
-        // hráč
-        if (entityX < minX) entityX = minX;
-        if (entityX + entityWidth > maxX) entityX = maxX - entityWidth;
+        if (entityX < minX) {
+            entityX = minX;
+            entityVelocityX = 0;
+        }
 
-        if (entityY + entityHeight > maxY) {
-            entityY = maxY - entityHeight;
+        if (entityX + entityWidth > maxX) {
+            entityX = maxX - entityWidth;
+            entityVelocityX = 0;
+        }
+
+        if (entityY < 40) {
+            entityY = 40;
+            if (entityVelocityY < 0) {
+                entityVelocityY = 0;
+            }
+        }
+
+        if (entityY + entityHeight > maxY - 40) {
+            entityY = maxY - 40 - entityHeight;
             entityVelocityY = 0;
             onGround = true;
         }
     }
 
-    // ===== BULLET MODE =====
+
     public void setIsBullet(boolean bullet) {
         this.isBullet = bullet;
 
@@ -152,7 +170,6 @@ public class Entity implements Collisionable {
         }
     }
 
-    // ===== GET / SET =====
     public boolean isActive() {
         return active;
     }
@@ -201,7 +218,6 @@ public class Entity implements Collisionable {
         this.onGround = onGround;
     }
 
-    // ===== COLLISION =====
     @Override
     public Rectangle2D getBoundingBox() {
         return new Rectangle2D(entityX, entityY, entityWidth, entityHeight);
@@ -214,6 +230,6 @@ public class Entity implements Collisionable {
 
     @Override
     public void onCollision(Collisionable other) {
-        // řeší Game / Scene
+        //pass
     }
 }

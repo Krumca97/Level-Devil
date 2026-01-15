@@ -5,7 +5,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 
 public class SettingsWindowController {
-
     @FXML
     private TextField inputDifficulty;
 

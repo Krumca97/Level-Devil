@@ -3,7 +3,6 @@ package projekt;
 import javafx.geometry.Rectangle2D;
 
 public class FinalScene extends Scene {
-
     private Game game;
 
     public FinalScene(double x, double y, double width, double height,Game game) {

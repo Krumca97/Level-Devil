@@ -5,18 +5,18 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 public class Scene implements Collisionable {
-
-    // pozice a velikost
     private final double platformX;
     private final double platformY;
     private final double platformWidth;
     private final double platformHeight;
 
-    // LEVEL DEVIL
     private int id = -1;
     private boolean isFinal = false;
     private GameEventListener listener;
     private boolean wasPlayerOnThis = false;
+    private boolean visible = true;
+    private PlatformListener platformListener;
+
 
     public Scene(double platformX, double platformY, double platformWidth, double platformHeight) {
         this.platformX = platformX;
@@ -31,7 +31,6 @@ public class Scene implements Collisionable {
         this.listener = listener;
     }
 
-    // ===== ID PLATFORMY =====
     public void setId(int id) {
         this.id = id;
     }
@@ -40,11 +39,12 @@ public class Scene implements Collisionable {
         return id;
     }
 
-    // ===== DRAW =====
     public void draw(GraphicsContext gc, Color color) {
+        if (!visible) return;
         gc.setFill(color);
         gc.fillRect(platformX, platformY, platformWidth, platformHeight);
     }
+
 
     public Rectangle2D getBoundingBox() {
         return new Rectangle2D(platformX, platformY, platformWidth, platformHeight);
@@ -52,48 +52,54 @@ public class Scene implements Collisionable {
 
     @Override
     public boolean intersects(Rectangle2D other) {
+        if (!visible) {
+            return false;
+        }
+
         return getBoundingBox().intersects(other);
     }
 
     @Override
     public void onCollision(Collisionable other) {
-        if (!(other instanceof Entity player)) return;
+        if (!visible) {
+            return;
+        }
+        if (!(other instanceof Entity player)) {
+            return;
+        }
 
         Rectangle2D playerBox = player.getBoundingBox();
         Rectangle2D platformBox = getBoundingBox();
 
         if (!playerBox.intersects(platformBox)) {
-            // hráč už na platformě není
             wasPlayerOnThis = false;
             return;
         }
 
-        // === DOSKOK SHORA (JEN JEDNOU) ===
-        boolean landingFromAbove =
-                player.getEntityVelocityY() >= 0 &&
-                        playerBox.getMaxY() <= platformBox.getMinY() + 10;
+        boolean landingFromAbove = player.getEntityVelocityY() >= 0 && playerBox.getMaxY() <= platformBox.getMinY() + 10;
 
         if (!isFinal && landingFromAbove) {
-
             player.setEntityY(platformY - player.getEntityHeight());
             player.setEntityVelocityY(0);
             player.setOnGround(true);
 
-            // 🔥 EVENT JEN PŘI PRVNÍM DOTYKU
             if (!wasPlayerOnThis) {
                 wasPlayerOnThis = true;
-                Game.onPlatformLanded(this);
+                if (platformListener != null) {
+                    platformListener.onPlatformLanded(this);
+                }
             }
         }
 
-        // === FINAL ===
         if (isFinal && listener != null) {
             listener.onLevelFinished();
         }
     }
 
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
 
-    // ===== GETTERS =====
     public double getPlatformX() {
         return platformX;
     }
@@ -106,7 +112,7 @@ public class Scene implements Collisionable {
         return platformWidth;
     }
 
-    public double getPlatformHeight() {
-        return platformHeight;
+    public void setPlatformListener(PlatformListener listener) {
+        this.platformListener = listener;
     }
 }

@@ -13,12 +13,14 @@ import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 
 public class MenuController {
+    private static String userName;
+
+    public static String getUserName() {
+        return userName != null ? userName : "Unknown";
+    }
 
     @FXML
     private ResourceBundle resources;
-
-    @FXML
-    private URL location;
 
     @FXML
     private Button historyButton;
@@ -31,7 +33,17 @@ public class MenuController {
 
     @FXML
     void onHistory(ActionEvent event) {
-        System.out.println("History");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/projekt/history.fxml"));
+
+            Stage stage = new Stage();
+            stage.setTitle("History");
+            stage.setScene(new javafx.scene.Scene(loader.load()));
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -52,15 +64,26 @@ public class MenuController {
 
     @FXML
     void onStartGame(ActionEvent event) {
-        ((Button) event.getSource()).getScene().getWindow().hide();
-        Game game = new Game();
-        Stage stage = new Stage();
-        game.start(stage);
+        try {
+            ((Button) event.getSource()).getScene().getWindow().hide();
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/projekt/level_select.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Select Level");
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
     private String askUserName() {
         TextInputDialog dialog = new TextInputDialog("");
         dialog.setTitle("Prihlaseni");
-        dialog.setHeaderText("Prosim vlozte sve jmeno(jako na strankach)");
+        dialog.setHeaderText("Prosim vlozte sve jmeno (jako na strankach)");
         dialog.setContentText("Jmeno:");
 
         return dialog.showAndWait().orElse("").trim();
@@ -68,9 +91,10 @@ public class MenuController {
 
     private void checkTeacher() {
 
-        String userName = askUserName();
+        String name = askUserName();
+        MenuController.userName = name;
 
-        if (userName.isEmpty()) {
+        if (name.isEmpty()) {
             System.out.println("Uzivatel nezadal jmeno.");
             return;
         }
@@ -78,12 +102,12 @@ public class MenuController {
         Set<String> teachers = TeacherChecker.loadTeachersFromKatedra();
 
         if (teachers.isEmpty()) {
-            System.out.println("Jsme offline nestahnu jmena ucitelu.");
+            System.out.println("Jsme offline – nestahnu jmena ucitelu.");
             Game.playerBonus = 0;
             return;
         }
 
-        if (TeacherChecker.isTeacher(userName, teachers)) {
+        if (TeacherChecker.isTeacher(name, teachers)) {
             System.out.println("Uzivatel je clen fakulty");
             System.out.println("Uzivatel ziskava 100 bodu");
             Game.playerBonus = 100;
@@ -100,7 +124,9 @@ public class MenuController {
         assert settingsButton != null : "fx:id=\"settingsButton\" was not injected.";
         assert startGame != null : "fx:id=\"startGame\" was not injected.";
 
-        checkTeacher();
+        if (!Game.userChecked) {
+            Game.userChecked = true;
+            javafx.application.Platform.runLater(this::checkTeacher);
+        }
     }
-
 }
