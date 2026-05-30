@@ -5,7 +5,7 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="projekt.history.HistoryController"
+            fx:controller="projekt.frontEnd.history.HistoryController"
             prefWidth="800" prefHeight="600">
 
     <ListView fx:id="listView"
