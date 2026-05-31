@@ -16,6 +16,8 @@ module projekt {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.annotation;
     requires org.jspecify;
+    requires java.net.http;
+    requires com.google.gson;
     opens projekt.frontEnd to javafx.fxml;
     exports projekt.frontEnd;
     exports projekt.frontEnd.history;
