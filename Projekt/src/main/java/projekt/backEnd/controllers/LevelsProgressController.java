@@ -2,6 +2,7 @@ package projekt.backEnd.controllers;
 
 import org.springframework.web.bind.annotation.*;
 import projekt.backEnd.entities.LevelsProgress;
+import projekt.backEnd.exceptions.LevelProgressException;
 import projekt.backEnd.repositories.LevelsProgressRepository;
 
 import java.util.List;
@@ -14,12 +15,14 @@ public class LevelsProgressController {
         this.levelsProgressRepo = levelsProgressRepo; 
     }
 
-    //get level progress
+    //get level progress by player
     @GetMapping("/levelProgress")
-    public List<LevelsProgress> getAllLevelProgress(){
+    public List<LevelsProgress> getLevelProgress(@RequestParam Long playerId){
+        if(playerId != null){
+            return levelsProgressRepo.findByPlayerId(playerId);
+        }
         return levelsProgressRepo.findAll();
     }
-
     //save level progress
     @PostMapping("/levelProgress")
     LevelsProgress newLevelProgress(@RequestBody LevelsProgress newLevelProgress) {
@@ -29,7 +32,7 @@ public class LevelsProgressController {
     // return specific progres of level
     @GetMapping("/levelProgress/{id}")
     LevelsProgress firstLevelProgress(@PathVariable Long id){
-        return levelsProgressRepo.findById(id).orElseThrow();
+        return levelsProgressRepo.findById(id).orElseThrow(() -> new LevelProgressException(id));
     }
 
     //update specific progress of level

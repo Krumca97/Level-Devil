@@ -2,7 +2,10 @@ package projekt.backEnd.controllers;
 
 import org.springframework.web.bind.annotation.*;
 import projekt.backEnd.entities.GameRecord;
+import projekt.backEnd.exceptions.GameRecordsException;
 import projekt.backEnd.repositories.GameRecordRepository;
+
+import java.util.List;
 
 @RestController
 public class GameRecordsController {
@@ -11,10 +14,12 @@ public class GameRecordsController {
     GameRecordsController(GameRecordRepository gameRecordRepo){
         this.gameRecordsRepo = gameRecordRepo;
     }
-
-    //get all game records for player
+    //get records by player
     @GetMapping("/gameRecords")
-    public Object getAllGameRecords(){
+    public List<GameRecord> getGameRecords(@RequestParam Long playerId){
+        if(playerId != null){
+            return gameRecordsRepo.findByPlayerId(playerId);
+        }
         return gameRecordsRepo.findAll();
     }
 
@@ -27,7 +32,7 @@ public class GameRecordsController {
     //return specific record for player by id
     @GetMapping("/gameRecords/{id}")
     GameRecord recordForPlayer(@PathVariable Long id){
-        return gameRecordsRepo.findById(id).orElseThrow();
+        return gameRecordsRepo.findById(id).orElseThrow(() -> new GameRecordsException(id));
     }
 
     //update players game records

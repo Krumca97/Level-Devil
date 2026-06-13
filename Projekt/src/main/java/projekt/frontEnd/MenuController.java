@@ -1,5 +1,7 @@
 package projekt.frontEnd;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -10,14 +12,24 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
+import lombok.Getter;
+import projekt.backEnd.entities.GameRecord;
+import projekt.backEnd.entities.LevelsProgress;
 import projekt.backEnd.entities.Player;
+import projekt.backEnd.entities.PlayerSettings;
 
 public class MenuController {
     private static String userName;
-
+    @Getter
+    private static Player currentPlayer;
+    @Getter
+    private static List<GameRecord> playerGameRecords;
+    @Getter
+    private static PlayerSettings playerSettings;
     public static String getUserName() {
         return userName != null ? userName : "Unknown";
     }
+
 
     @FXML
     private ResourceBundle resources;
@@ -93,13 +105,13 @@ public class MenuController {
 
         String name = askUserName();
         MenuController.userName = name;
-        Player player = ApiClient.findPlayerByName(name);
 
         if (name.isEmpty()) {
             System.out.println("Uzivatel nezadal jmeno.");
             return;
         }
 
+        Player player = ApiClient.findPlayerByName(name);
         Set<String> teachers = TeacherChecker.loadTeachersFromKatedra();
 
         if (teachers.isEmpty()) {
@@ -121,10 +133,32 @@ public class MenuController {
             System.out.println("Uzivatel nebyl nalezen v databazi, vytvarim noveho");
             Player newPlayer = new Player();
             newPlayer.setName(name);
-            player = ApiClient.newPlayer(newPlayer);
+            currentPlayer = ApiClient.newPlayer(newPlayer);
         }
         else{
+            System.out.println("Uzivatel nalezen v databazi, aktualizuji bonus");
+            currentPlayer = player;
+            List<GameRecord> gameRecords = ApiClient.getGameRecordsByPlayerId(player.getId());
+            List<LevelsProgress> levelsProgresses = ApiClient.getLevelsProgressByPlayerId(player.getId());
+            PlayerSettings settings = ApiClient.getPlayerSettingsByPlayerId(player.getId());
 
+            Game.completedLevels = new HashSet<>();
+            if(levelsProgresses != null){
+                for(LevelsProgress levelProgress : levelsProgresses){
+                    if(levelProgress.isLevel1Completed()){
+                        Game.completedLevels.add(1);
+                    }
+                    if(levelProgress.isLevel2Completed()){
+                        Game.completedLevels.add(2);
+                    }
+                    if(levelProgress.isLevel3Completed()){
+                        Game.completedLevels.add(3);
+                    }
+                }
+            }
+
+            playerSettings = settings;
+            playerGameRecords = gameRecords;
         }
     }
 

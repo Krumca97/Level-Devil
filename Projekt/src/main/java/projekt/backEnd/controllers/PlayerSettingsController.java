@@ -16,9 +16,12 @@ public class PlayerSettingsController {
         this.playerSettingsRepo = playerSettingsRepo;
     }
 
-    //get all settings from player
+    //find game settings by player
     @GetMapping("/playerSettings")
-    public List<PlayerSettings> getAllPlayerSettings(){
+    public List<PlayerSettings> findByPlayerId(@RequestParam Long playerId){
+        if(playerId != null){
+            return playerSettingsRepo.findByPlayerId(playerId);
+        }
         return playerSettingsRepo.findAll();
     }
 

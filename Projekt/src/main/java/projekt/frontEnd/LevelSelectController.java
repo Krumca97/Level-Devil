@@ -15,9 +15,6 @@ public class LevelSelectController {
 
     @FXML
     private void initialize() {
-
-        SaveManager.loadCompletedLevels(Game.completedLevels);
-
         if (Game.completedLevels.contains(1)) {
             level1Button.setStyle("-fx-background-color: #2ecc71;");
         }

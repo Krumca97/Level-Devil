@@ -13,8 +13,10 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import projekt.frontEnd.history.GameRecord;
-import projekt.frontEnd.history.HistoryManager;
+import projekt.backEnd.entities.GameRecord;
+import projekt.backEnd.entities.LevelsProgress;
+import projekt.backEnd.entities.PlayerSettings;
+import projekt.frontEnd.history.GameRecordLocal;
 
 @Log4j2
 public class Game extends Application implements GameEventListener {
@@ -122,6 +124,14 @@ public class Game extends Application implements GameEventListener {
 
     // vytahnout level z databaze
     private void loadLevel(int levelNumber) {
+        PlayerSettings settings = MenuController.getPlayerSettings();
+        if(settings != null) {
+            log.info("Loading level " + levelNumber + " with settings: " + settings);
+        }
+        else{
+            log.info("Loading level " + levelNumber + " with default settings (no player settings found)");
+        }
+
         if (levelNumber == 1) {
             currentLevel = new Level1();
         }
@@ -185,14 +195,32 @@ public class Game extends Application implements GameEventListener {
             }});
         long timeSpent = System.currentTimeMillis() - levelStartTime;
 
-        GameRecord record = new GameRecord(
+        GameRecordLocal record = new GameRecordLocal(
                 MenuController.getUserName(),
                 Game.selectedLevel,
                 timeSpent,
                 System.currentTimeMillis());
 
-        HistoryManager.saveRecord(record);
-        log.info("Level " + Game.selectedLevel + " finished by " + MenuController.getUserName() + " in " + timeSpent + " ms");
+//        HistoryManager.saveRecord(record);
+//        log.info("Level " + Game.selectedLevel + " finished by " + MenuController.getUserName() + " in " + timeSpent + " ms");
+
+
+        //ukladani dat ze hry do databaze
+        GameRecord backEndRecords = new GameRecord();
+        backEndRecords.setTime(timeSpent);
+        backEndRecords.setTimestamp(System.currentTimeMillis());
+        backEndRecords.setPlayer(MenuController.getCurrentPlayer());
+        backEndRecords.setLevel(Game.selectedLevel);
+
+        ApiClient.saveGameRecords(backEndRecords);
+
+        LevelsProgress backEndlevelsProgress = new LevelsProgress();
+        backEndlevelsProgress.setPlayer(MenuController.getCurrentPlayer());
+        backEndlevelsProgress.setLevel1Completed(Game.completedLevels.contains(1));
+        backEndlevelsProgress.setLevel2Completed(Game.completedLevels.contains(2));
+        backEndlevelsProgress.setLevel3Completed(Game.completedLevels.contains(3));
+
+        ApiClient.saveLevelsProgress(backEndlevelsProgress);
     }
 
     private void exitToLevelSelect() {

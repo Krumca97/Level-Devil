@@ -17,6 +17,7 @@ public class GameRecord {
 
     private long timestamp;
     private long time;
+    private int level;
 
     @ManyToOne
     @JoinColumn(name = "player_id")
