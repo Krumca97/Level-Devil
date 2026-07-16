@@ -1,9 +1,6 @@
 # Level Devil Project
 
 **Author:** Aleš Laník (LAN0229)
-**Course:** Java 2 — Semester Project
-**Institution:** VŠB – Technical University of Ostrava, FEI
-
 ---
 
 ## Overview
